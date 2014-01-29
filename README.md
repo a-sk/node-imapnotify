@@ -25,7 +25,10 @@ Execute scripts on new messages using IDLE imap command
 # install
 
 npm:
-`npm install -g imapnotify`
+    `npm install -g imapnotify`
+
+archlinux aur package:
+    `yaourt -S nodejs-imapnotify` (bonus: systemd.service file)
 
 # usage
 
