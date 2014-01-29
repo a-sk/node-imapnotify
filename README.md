@@ -23,17 +23,28 @@ Execute scripts on new messages using IDLE imap command
 ```
 
 ## substitutions
+
 `%s` in `onNewMail` and `onNewMailPost` values is replaced by box name.
+
 `/` symbol (slash) is replaced by `-` symbol (minus)
 
 # install
 
 npm:
-    ```npm install -g imapnotify``
+
+```
+npm install -g imapnotify
+```
 
 archlinux aur package:
-    ```yaourt -S nodejs-imapnotify``` (bonus: systemd.service file)
+
+```
+yaourt -S nodejs-imapnotify
+```
+(bonus: systemd.service file)
 
 # usage
 
-```imapnotify -c /path/to/config```
+```
+imapnotify -c /path/to/config
+```
