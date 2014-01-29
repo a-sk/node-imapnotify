@@ -1,0 +1,30 @@
+{
+  "name": "imapnotify",
+  "version": "0.0.1",
+  "description": "Execute scripts on new messages using IDLE imap command",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/a-sk/node-imapnotify.git"
+  },
+  "author": {
+    "name": "Alexandr Skurikhin",
+    "email": "a@skurih.in"
+  },
+  "bin": "bin/imapnotify",
+  "dependencies": {
+    "imap": "~0.8.7",
+    "optimist": "~0.6.0",
+    "printf": "~0.1.2",
+    "winston": "~0.7.2",
+    "mkdirp": "~0.3.5",
+    "xenvar": "~0.5.1",
+    "bunyan": "~0.22.1"
+  },
+  "keywords": [
+    "imap",
+    "notify",
+    "mail",
+    "email"
+    ],
+    "license": "MIT"
+}

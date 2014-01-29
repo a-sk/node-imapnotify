@@ -1,0 +1,270 @@
+#!/usr/bin/env node
+
+var Imap = require('imap')
+  , argv = require('optimist').argv
+  , path = require('path')
+  , fs = require('fs')
+  , printf = require('printf')
+  , exec = require('child_process').exec
+  , mkdirp = require('mkdirp')
+  , xenvar = require('xenvar')
+  , bunyan = require('bunyan')
+;
+
+
+if (process.env['DEBUG']) {
+  var logger = bunyan.createLogger({
+      name: 'imap_inotify',
+      stream: process.stdout,
+      level: 'debug'
+  });
+} else {
+  var logger = bunyan.createLogger({
+      name: 'imap_inotify',
+      stream: process.stdout,
+      level: 'info'
+  });
+}
+
+function Notifier(config) {
+    var self = this;
+
+    this.config = config
+    this.connections = {}
+    this.errors = {}
+    this.logger = logger.child({'server': this.config.server})
+}
+
+Notifier.prototype.add_box = function(box, cb, debug) {
+  if (typeof cb !== 'function') {
+    cb = function() {}
+  }
+  var self = this;
+
+  if ( self.connections[box] ) {
+    delete self.connections[box]
+  }
+
+  var connection = self.create_connection(debug);
+  self.connections[box] = connection;
+
+  connection.once('ready', function() {
+    delete self.errors[box]
+    self.logger.info({box: box}, 'Connected to server')
+    self.logger.info({box: box},'Selecting box');
+    var delimiter = connection.namespaces.personal[0].delimiter;
+    connection.openBox(replace(box, '/', delimiter), true, function(err) {
+      if (err) throw err;
+      connection.on('mail', function() {
+        self.logger.info({box: box}, 'New mail')
+        cb(box)
+      })
+    });
+  });
+
+  connection.once('end', function() {
+    self.logger.info({box: box}, 'Connection ended')
+    connection.emit('shoudReconnect')
+  });
+
+  connection.once('error', function(error) {
+    self.logger.error({box: box}, 'Error registered');
+    self.logger.error({box: box}, error);
+    if (! self.errors[box]) {
+      self.logger.info({box: box}, 'Restarting immidiatly')
+      self.errors[box] = {'time': Date.now(), 'count': 1 }
+      connection.emit('shoudReconnect')
+    } else {
+      var delta = Date.now() - self.errors[box]['time']
+        , errCount = self.errors[box]['count'];
+
+
+      if (self.errors[box]['count'] == 3) {
+        throw Error('Max retry limit reached')
+      }
+
+      var restartTimeout = errCount*3000
+      self.errors[box]['count'] = self.errors[box]['count'] + 1
+      self.logger.info({box: box}, 'Scheduling restart in ' + restartTimeout)
+      setTimeout(function() {
+        connection.emit('shoudReconnect')
+      }, restartTimeout);
+
+    }
+  })
+
+  connection.once('shoudReconnect', function() {
+    self.logger.debug({box: box}, 'ShoudReconnect event')
+    self.logger.debug({box: box}, 'Readding box')
+    self.add_box(box, executeOnNewMail(self.config), process.env['DEBUG'] === 'imap' ? logger.debug : null)
+    self.start_watch(box)
+  })
+}
+
+Notifier.prototype.start_watch = function(box) {
+  var self = this;
+  self.connections[box].connect()
+}
+
+Notifier.prototype.stop_watch = function(box) {
+  var self = this;
+  self.logger.info({'box': box}, 'Ending connection')
+  self.connections[box].end()
+}
+
+Notifier.prototype.create_connection = function(debug) {
+  var self = this;
+
+  var connection = new Imap({
+    user: self.config.username,
+    password: self.config.password,
+    host: self.config.host,
+    port: self.config.port,
+    tls: self.config.tls || true,
+    debug: debug ? debug : noop,
+    tlsOptions: self.config.tlsOptions
+  });
+
+
+  return connection
+}
+
+Notifier.prototype.start = function() {
+  var self = this;
+  Object.keys(this.connections).forEach(function(box) {
+    self.start_watch(box)
+  })
+}
+
+Notifier.prototype.stop = function(cb) {
+  if (typeof cb != 'function') {
+    cb = noop
+  }
+  var self = this;
+  Object.keys(self.connections).forEach(function(box) {
+    self.stop_watch(box)
+  })
+
+  setTimeout(function() {
+    self.logger.debug('Calling stop callback')
+    cb()
+  }, 500);
+}
+
+Notifier.prototype.restart = function() {
+  this.stop()
+  this.start()
+}
+
+
+// Utils
+
+function noop() {
+}
+
+function replace(string, charToReplace, replaceWith) {
+  return string.replace(new RegExp(charToReplace, 'g'), replaceWith)
+}
+
+function die(retcode, msg) {
+  logger.error(msg);
+  process.exit(retcode);
+}
+
+function expandPath(string) {
+  return xenvar.expandvars(xenvar.expanduser(string))
+}
+
+function run(cmd, cb) {
+  if (typeof cb != 'function') {
+    cb = noop
+  }
+
+  logger.info('Running ' + cmd);
+  exec(cmd, function(err, stdout, stderr) {
+    if (err) {
+      logger.error('Error running ' + cmd);
+      logger.error(stderr);
+      cb(err)
+    } else {
+      logger.debug(stdout);
+      cb(null)
+    }
+  })
+}
+
+// main
+
+function executeOnNewMail(config) {
+  var command = config.onNewMail
+    , postCommand = config.onNewMailPost
+  ;
+  return function notify(box) {
+
+    logger.debug('New message callback');
+    box = replace(box.toLowerCase(), '\/', '-')
+
+    run(printf(command, box), function(err) {
+      if (! err) {
+        run(printf(postCommand, box))
+      }
+    })
+  }
+}
+
+
+function main(cb) {
+  if (typeof cb !== 'function') {
+    cb = function() {}
+  }
+
+  var configPath = expandPath(argv.c || argv.config || '~/.config/imap_inotify/config.json')
+
+  if (! fs.existsSync(configPath)) {
+    die(2, 'Config file does not exist')
+  }
+
+  try {
+    var config = require(configPath)
+  } catch(e) {
+    die(3, 'Parsing error: config file must be in JSON format')
+  }
+
+  process.setMaxListeners(100);
+
+
+  var notifier = new Notifier(config);
+
+  config.boxes.forEach(function (box) {
+    notifier.add_box(box, executeOnNewMail(config), process.env['DEBUG'] === 'imap' ? logger.debug : null)
+  })
+
+  process.on('SIGINT', function() {
+    logger.info('Caught Ctrl-C, exiting...')
+    notifier.stop(function() {
+      logger.info('imap-inotify stoped')
+      process.exit(4)
+    })
+  })
+
+  process.on('SIGTERM', function() {
+    logger.info('Caught SIGTERM, exiting...')
+    notifier.stop(function() {
+      logger.info('imap-inotify stoped')
+      process.exit(5)
+    })
+  })
+
+  process.on('SIGUSR2', function() {
+    logger.info('Caught SIGUSR, restarting...')
+    notifier.restart()
+  })
+
+  notifier.start()
+
+}
+
+main(function() {
+  logger.info('imap-inotify started')
+})
+
