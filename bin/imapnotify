@@ -64,16 +64,16 @@ Notifier.prototype.add_box = function(box, cb, debug) {
 
   connection.once('end', function() {
     self.logger.info({box: box}, 'Connection ended')
-    connection.emit('shoudReconnect')
+    connection.emit('shouldReconnect')
   });
 
   connection.once('error', function(error) {
     self.logger.error({box: box}, 'Error registered');
     self.logger.error({box: box}, error);
     if (! self.errors[box]) {
-      self.logger.info({box: box}, 'Restarting immidiatly')
+      self.logger.info({box: box}, 'Restarting immediately')
       self.errors[box] = {'time': Date.now(), 'count': 1 }
-      connection.emit('shoudReconnect')
+      connection.emit('shouldReconnect')
     } else {
       var delta = Date.now() - self.errors[box]['time']
         , errCount = self.errors[box]['count'];
@@ -87,15 +87,15 @@ Notifier.prototype.add_box = function(box, cb, debug) {
       self.errors[box]['count'] = self.errors[box]['count'] + 1
       self.logger.info({box: box}, 'Scheduling restart in ' + restartTimeout)
       setTimeout(function() {
-        connection.emit('shoudReconnect')
+        connection.emit('shouldReconnect')
       }, restartTimeout);
 
     }
   })
 
-  connection.once('shoudReconnect', function() {
-    self.logger.debug({box: box}, 'ShoudReconnect event')
-    self.logger.debug({box: box}, 'Readding box')
+  connection.once('shouldReconnect', function() {
+    self.logger.debug({box: box}, 'shouldReconnect event')
+    self.logger.debug({box: box}, 'Reading box')
     self.add_box(box, executeOnNewMail(self.config), process.env['DEBUG'] === 'imap' ? logger.debug : null)
     self.start_watch(box)
   })
