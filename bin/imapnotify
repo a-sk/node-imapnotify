@@ -243,7 +243,7 @@ function main(cb) {
     logger.info('Caught Ctrl-C, exiting...')
     notifier.stop(function() {
       logger.info('imap-inotify stoped')
-      process.exit(4)
+      process.exit(0)
     })
   })
 
@@ -251,7 +251,7 @@ function main(cb) {
     logger.info('Caught SIGTERM, exiting...')
     notifier.stop(function() {
       logger.info('imap-inotify stoped')
-      process.exit(5)
+      process.exit(2)
     })
   })
 
