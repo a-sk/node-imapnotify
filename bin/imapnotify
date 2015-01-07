@@ -193,22 +193,43 @@ function run(cmd, cb) {
   })
 }
 
-// main
+function executeCommands(command, postCommand, cb) {
+  logger.debug('Execute commands callback');
+  if (! command) {
+    logger.debug('Did not find command to execute');
+    return cb(err)
+  }
+  if (typeof cb != 'function') {
+    cb = noop
+  }
+
+  logger.debug('Found command: ' + command);
+  run(command, function(err) {
+    if (! err && postCommand) {
+      logger.debug('Found postCommand: ' + postCommand);
+      run(postCommand, function(err) {
+        if (! err) {
+          cb(null)
+        } else {
+          cb(err)
+        }
+      })
+    } else {
+      cb(err)
+    }
+  })
+}
 
 function executeOnNewMail(config) {
   var command = config.onNewMail
     , postCommand = config.onNewMailPost
   ;
   return function notify(box) {
-
-    logger.debug('New message callback');
-    box = replace(box.toLowerCase(), '\/', '-')
-
-    run(printf(command, box), function(err) {
-      if (! err) {
-        run(printf(postCommand, box))
-      }
-    })
+      logger.debug('New message callback');
+      box = replace(box.toLowerCase(), '\/', '-')
+      command = printf(command, box)
+      postCommand = printf(postCommand, box)
+      return executeCommands(command, postCommand)
   }
 }
 
