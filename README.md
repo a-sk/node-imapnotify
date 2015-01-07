@@ -21,6 +21,15 @@ Execute scripts on new messages using IDLE IMAP command
     ]
 }
 ```
+
+`onNewMail` executable to run on new mail in box
+`onNewPost` executable to run after onNewMail command
+
+### extra options
+
+`onSIGNAL` a command to run when `SIGNAL` is received.
+`onSIGNALpost` a command to run after onSINGAL
+
 # config as a node module
 
 Since we load the config file with require(), we can get away with any nodejs 
@@ -61,9 +70,10 @@ Thanks Matthew, for pointing that out!
 
 ## substitutions
 
-`%s` in `onNewMail` and `onNewMailPost` values is replaced by box name.
+`%s` in `onNewMail` and `onNewMailPost` is replaced by the box name.
 
-`/` symbol (slash) is replaced by `-` symbol (minus)
+`/` symbol (slash) is replaced by `-` symbol (minus) so that
+`inbox/junk` becomes `inbox-junk`
 
 # install
 
