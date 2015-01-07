@@ -255,8 +255,8 @@ function main(cb) {
     })
   })
 
-  process.on('SIGUSR2', function() {
-    logger.info('Caught SIGUSR, restarting...')
+  process.on('SIGHUP', function() {
+    logger.info('Caught SIGHUP, restarting...')
     notifier.restart()
   })
 
