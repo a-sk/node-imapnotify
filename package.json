@@ -1,6 +1,6 @@
 {
   "name": "imapnotify",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Execute scripts on new messages using IDLE imap command",
   "repository": {
     "type": "git",
@@ -12,13 +12,13 @@
   },
   "bin": "bin/imapnotify",
   "dependencies": {
-    "imap": "~0.8.7",
-    "optimist": "~0.6.0",
-    "printf": "~0.1.2",
-    "winston": "~0.7.2",
-    "mkdirp": "~0.3.5",
+    "imap": "~0.8.14",
+    "optimist": "~0.6.1",
+    "printf": "~0.2.0",
+    "winston": "~0.8.3",
+    "mkdirp": "~0.5.0",
     "xenvar": "~0.5.1",
-    "bunyan": "~0.22.1"
+    "bunyan": "~1.2.3"
   },
   "keywords": [
     "imap",
