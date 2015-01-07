@@ -152,8 +152,10 @@ Notifier.prototype.stop = function(cb) {
 }
 
 Notifier.prototype.restart = function() {
-  this.stop()
-  this.start()
+  var self = this
+  this.stop(function() {
+    self.stop()
+  })
 }
 
 
