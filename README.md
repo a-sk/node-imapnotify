@@ -34,6 +34,17 @@ Execute scripts on new messages using IDLE IMAP command
     onSIGNALpost: a command to run after onSINGAL
 ``` 
 
+Example:
+
+```javascript
+{
+  ...
+  "onSIGTERM": "/usr/bin/mbsync -a",
+  "onSIGTERMpost": "echo 'Bye-Bye'"
+  ...
+}
+```
+
 # config as a node module
 
 Since we load the config file with require(), we can get away with any nodejs 
