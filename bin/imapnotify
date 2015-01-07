@@ -194,10 +194,9 @@ function run(cmd, cb) {
 }
 
 function executeCommands(command, postCommand, cb) {
-  logger.debug('Execute commands callback');
   if (! command) {
     logger.debug('Did not find command to execute');
-    return cb(err)
+    return cb(new Error('Did not find command to execute'))
   }
   if (typeof cb != 'function') {
     cb = noop
@@ -233,6 +232,12 @@ function executeOnNewMail(config) {
   }
 }
 
+function runOnSig(signal, config, cb) {
+  signal = 'SIG' + signal
+  logger.debug('trying running on' + signal + ' commands')
+  return executeCommands(config['on' + signal], config['on' + signal + 'post'], cb)
+}
+
 
 function main(cb) {
   if (typeof cb !== 'function') {
@@ -264,7 +269,7 @@ function main(cb) {
     logger.info('Caught Ctrl-C, exiting...')
     notifier.stop(function() {
       logger.info('imap-inotify stoped')
-      process.exit(0)
+      runOnSig('INT', config, function() {process.exit(0)})
     })
   })
 
@@ -272,13 +277,13 @@ function main(cb) {
     logger.info('Caught SIGTERM, exiting...')
     notifier.stop(function() {
       logger.info('imap-inotify stoped')
-      process.exit(2)
+      runOnSig('TERM', config, function() {process.exit(2)})
     })
   })
 
   process.on('SIGHUP', function() {
     logger.info('Caught SIGHUP, restarting...')
-    notifier.restart()
+    runOnSig('HUP', config, function() {notifier.restart()})
   })
 
   notifier.start()
