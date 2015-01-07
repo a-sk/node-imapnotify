@@ -22,13 +22,17 @@ Execute scripts on new messages using IDLE IMAP command
 }
 ```
 
-`onNewMail` executable to run on new mail in box
-`onNewPost` executable to run after onNewMail command
+```
+    onNewMail: an executable to run on new mail in box
+    onNewPost: an executable to run after onNewMail command
+```
 
 ### extra options
 
-`onSIGNAL` a command to run when `SIGNAL` is received.
-`onSIGNALpost` a command to run after onSINGAL
+```
+    onSIGNAL: a command to run when `SIGNAL` is received.
+    onSIGNALpost: a command to run after onSINGAL
+``` 
 
 # config as a node module
 
