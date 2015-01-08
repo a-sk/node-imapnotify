@@ -90,6 +90,38 @@ Thanks Matthew, for pointing that out!
 `/` symbol (slash) is replaced by `-` symbol (minus) so that
 `inbox/junk` becomes `inbox-junk`
 
+
+# example mbsync configuration
+
+```
+IMAPAccount      example
+Host             imap.example.com
+User             test@example.com
+Pass             secret
+UseIMAPS         yes
+
+IMAPStore  example-remote
+Account    example
+
+MaildirStore  example-local
+Path ~/Maildir/mail/example/
+Inbox ~/Maildir/mail/example/Inbox
+Flatten .
+
+
+Channel example-inbox
+Master :example-remote:INBOX
+Slave  :example-local:INBOX
+
+Channel example-github
+Master :example-remote:github
+Slave  :example-local:github
+
+Channel example-lists-vim-announce
+Master :example-remote:lists/vim-announce
+Slave  :example-local:lists/vim-announce
+```
+
 # install
 
 npm:
