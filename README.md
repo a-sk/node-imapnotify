@@ -73,7 +73,7 @@ follows.  Assuming the script ~/getpass.sh prints out your password.
     exports.password = getStdout("~/getpass.sh");
     exports.onNewMail = "<sync command>"
     exports.onNewMailPost = "<command>"
-    exports.boxes = [ <boxes> ];
+    exports.boxes = [ "box1", "box2", "some/other/box" ];
 ```
 
 Then you can use
