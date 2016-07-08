@@ -249,13 +249,13 @@ function main(cb) {
   var configPath = expandPath(argv.c || argv.config || '~/.config/imap_inotify/config.json')
 
   if (! fs.existsSync(configPath)) {
-    die(2, 'Config file does not exist')
+    die(2, printf('Config file does not exist: %s', configPath))
   }
 
   try {
     var config = require(configPath)
   } catch(e) {
-    die(3, 'Parsing error: config file must be in JSON format')
+    die(3, printf('Parsing error: config file must be in JSON format or a valid JS module: %s', e))
   }
 
   process.setMaxListeners(100);
