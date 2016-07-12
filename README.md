@@ -54,7 +54,10 @@ This allows us to be more flexible with the configuration.
 In particular, you one can use it to load password from a script rather than
 having to store it in plain text.
 
-Using the latest (git) version of nodejs, one can write myconfig.js as
+Important: config-module must be `requirable` (in your $NODE_PATH or
+given by an absolute path)
+
+Using the latest (>0.12) version of nodejs, one can write myconfig.js as
 follows.  Assuming the script ~/getpass.sh prints out your password.
 (execSync is a v0.12 feature)
 ```javascript
