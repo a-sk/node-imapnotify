@@ -52,7 +52,12 @@ Notifier.prototype.add_box = function(box, cb, debug) {
     delete self.errors[box]
     self.logger.info({box: box}, 'Connected to server')
     self.logger.info({box: box},'Selecting box');
-    var delimiter = connection.namespaces.personal[0].delimiter;
+
+    var delimiter = '/';
+    if (connection.namespaces) {
+      delimiter = connection.namespaces.personal[0].delimiter;
+    }
+
     connection.openBox(replace(box, '/', delimiter), true, function(err) {
       if (err) throw err;
       connection.on('mail', function() {
