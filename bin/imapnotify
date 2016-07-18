@@ -120,7 +120,7 @@ Notifier.prototype.create_connection = function(debug) {
     password: self.config.password,
     host: self.config.host,
     port: self.config.port,
-    tls: self.config.tls || true,
+    tls: self.config.tls || false,
     debug: debug ? debug : noop,
     tlsOptions: self.config.tlsOptions
   });
