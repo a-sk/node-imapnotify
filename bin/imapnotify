@@ -231,7 +231,6 @@ function executeOnNewMail(config) {
     , postCommand = config.onNewMailPost
   ;
   return function notify(box) {
-      logger.debug('New message callback');
       box = replace(box.toLowerCase(), '\/', '-')
       command = printf(command, box)
       postCommand = printf(postCommand, box)
