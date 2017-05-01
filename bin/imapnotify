@@ -64,6 +64,14 @@ Notifier.prototype.add_box = function(box, cb, debug) {
         self.logger.info({box: box}, 'New mail')
         cb(box)
       })
+      connection.on('expunge', function() {
+        self.logger.info({box: box}, 'Messages deleted')
+        cb(box)
+      })
+      connection.on('update', function() {
+        self.logger.info({box: box}, 'Messages deleted')
+        cb(box)
+      })
     });
   });
 
