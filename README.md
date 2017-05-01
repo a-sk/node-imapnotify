@@ -1,6 +1,6 @@
 # imapnotify
 
-Execute scripts on new messages using IDLE IMAP command
+Execute scripts on IMAP mailbox changes (new/deleted/updated messages) using IDLE.
 
 # config
 
@@ -12,8 +12,8 @@ Execute scripts on new messages using IDLE IMAP command
   "tlsOptions": { "rejectUnauthorized": false },
   "username": "",
   "password": "",
-  "onNewMail": "/usr/bin/mbsync test-%s",
-  "onNewMailPost": "/usr/bin/notmuch new",
+  "onNotify": "/usr/bin/mbsync test-%s",
+  "onNotifyPost": "/usr/bin/notmuch new",
   "boxes":
     [
       "box1",
@@ -23,8 +23,8 @@ Execute scripts on new messages using IDLE IMAP command
 ```
 
 ```
-    onNewMail: an executable to run on new mail in box
-    onNewPost: an executable to run after onNewMail command
+    onNotify: an executable to run on new mail in box
+    onNotifyPost: an executable to run after onNotify command
 ```
 
 ### extra options
@@ -74,8 +74,8 @@ follows.  Assuming the script ~/getpass.sh prints out your password.
     exports.tlsOptions = { "rejectUnauthorized": false };
     exports.username = "<user>";
     exports.password = getStdout("~/getpass.sh");
-    exports.onNewMail = "<sync command>"
-    exports.onNewMailPost = "<command>"
+    exports.onNotify = "<sync command>"
+    exports.onNotifyPost = "<command>"
     exports.boxes = [ "box1", "box2", "some/other/box" ];
 ```
 
@@ -88,7 +88,7 @@ Thanks Matthew, for pointing that out!
 
 ## substitutions
 
-`%s` in `onNewMail` and `onNewMailPost` is replaced by the box name.
+`%s` in `onNotify` and `onNotifyPost` is replaced by the box name.
 
 `/` symbol (slash) is replaced by `-` symbol (minus) so that
 `inbox/junk` becomes `inbox-junk`
