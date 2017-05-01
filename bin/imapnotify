@@ -65,11 +65,11 @@ Notifier.prototype.add_box = function(box, cb, debug) {
         cb(box)
       })
       connection.on('expunge', function() {
-        self.logger.info({box: box}, 'Messages deleted')
+        self.logger.info({box: box}, 'Deleted messages')
         cb(box)
       })
       connection.on('update', function() {
-        self.logger.info({box: box}, 'Messages deleted')
+        self.logger.info({box: box}, 'Altered message metadata')
         cb(box)
       })
     });
