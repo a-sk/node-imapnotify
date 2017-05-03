@@ -51,7 +51,7 @@ Notifier.prototype.add_box = function(box, cb, debug) {
   connection.once('ready', function() {
     delete self.errors[box]
     self.logger.info({box: box}, 'Connected to server')
-    self.logger.info({box: box},'Selecting box');
+    self.logger.info({box: box}, 'Selecting box');
 
     var delimiter = '/';
     if (connection.namespaces) {
@@ -60,10 +60,15 @@ Notifier.prototype.add_box = function(box, cb, debug) {
 
     connection.openBox(replace(box, '/', delimiter), true, function(err) {
       if (err) throw err;
-      connection.on('mail', function() {
-        self.logger.info({box: box}, 'New mail')
-        cb(box)
-      })
+      function addConnectionListener(event, message) {
+        connection.on(event, function() {
+          self.logger.info({box: box}, message)
+          cb(box)
+        })
+      }
+      addConnectionListener('mail',    'New Mail')
+      addConnectionListener('expunge', 'Deleted Mail')
+      addConnectionListener('update',  'Altered message metadata')
     });
   });
 
@@ -101,7 +106,7 @@ Notifier.prototype.add_box = function(box, cb, debug) {
   connection.once('shouldReconnect', function() {
     self.logger.debug({box: box}, 'shouldReconnect event')
     self.logger.debug({box: box}, 'Reading box')
-    self.add_box(box, executeOnNewMail(self.config), process.env['DEBUG'] === 'imap' ? logger.debug : null)
+    self.add_box(box, executeOnNotify(self.config), process.env['DEBUG'] === 'imap' ? logger.debug : null)
     self.start_watch(box)
   })
 }
@@ -226,9 +231,9 @@ function executeCommands(command, postCommand, cb) {
   })
 }
 
-function executeOnNewMail(config) {
-  var command = config.onNewMail
-    , postCommand = config.onNewMailPost
+function executeOnNotify(config) {
+  var command = config.onNotify || config.onNewMail
+    , postCommand = config.onNotifyPost || config.onNewMailPost
   ;
   return function notify(box) {
       box = replace(box.toLowerCase(), '\/', '-')
@@ -268,7 +273,7 @@ function main(cb) {
   var notifier = new Notifier(config);
 
   config.boxes.forEach(function (box) {
-    notifier.add_box(box, executeOnNewMail(config), process.env['DEBUG'] === 'imap' ? logger.debug : null)
+    notifier.add_box(box, executeOnNotify(config), process.env['DEBUG'] === 'imap' ? logger.debug : null)
   })
 
   process.on('SIGINT', function() {
