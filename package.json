@@ -1,6 +1,6 @@
 {
   "name": "imapnotify",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "Execute scripts on new messages using IDLE imap command",
   "repository": {
     "type": "git",
