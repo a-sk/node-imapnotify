@@ -63,7 +63,7 @@ Notifier.prototype.add_box = function(box, cb, debug) {
       function addConnectionListener(event, message) {
         connection.on(event, function() {
           self.logger.info({box: box}, message)
-          cb(box)
+			cb(box, event)
         })
       }
       addConnectionListener('mail',    'New Mail')
@@ -234,13 +234,15 @@ function executeCommands(command, postCommand, cb) {
 function executeOnNotify(config) {
   var command = config.onNotify || config.onNewMail
     , postCommand = config.onNotifyPost || config.onNewMailPost
-  ;
-  return function notify(box) {
-      box = replace(box.toLowerCase(), '\/', '-')
-      command = printf(command, box)
-      postCommand = printf(postCommand, box)
-      return executeCommands(command, postCommand)
-  }
+	, commandIsEventMap = (typeof command === 'object')
+	, postCommandIsEventMap = (typeof postCommand === 'object')
+	;
+	return function notify(box, event) {
+		var formattedBox = replace(box.toLowerCase(), '/', '-')
+		, formattedCommand = printf(commandIsEventMap ? command[event] || '': command, formattedBox)
+		, formattedPostCommand = printf(postCommandIsEventMap ? postCommand[event] || '': command, formattedBox)
+		return executeCommands(formattedCommand, formattedPostCommand)
+	}
 }
 
 function runOnSig(signal, config, cb) {

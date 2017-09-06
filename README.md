@@ -13,7 +13,7 @@ Execute scripts on IMAP mailbox changes (new/deleted/updated messages) using IDL
   "username": "",
   "password": "",
   "onNotify": "/usr/bin/mbsync test-%s",
-  "onNotifyPost": "/usr/bin/notmuch new",
+  "onNotifyPost": {"mail": "/usr/bin/notmuch new && notify-send 'New mail arrived'"},
   "boxes":
     [
       "box1",
@@ -23,8 +23,14 @@ Execute scripts on IMAP mailbox changes (new/deleted/updated messages) using IDL
 ```
 
 ```
-    onNotify: an executable to run on new mail in box
-    onNotifyPost: an executable to run after onNotify command
+	onNotify:
+		[string]: shell command to run on any event
+		[object]: shell commands to run on for each type of event
+			keys: "mail" for new mail, "update" for existing messages updates, "expunge" for messages deletions
+    onNotifyPost:
+		[string]: shell command to run after onNotify event
+		[object]: shell commands to run after onNotify for each type of event
+			keys: "mail" for new mail, "update" for existing messages updates, "expunge" for messages deletions
 ```
 
 ### extra options
