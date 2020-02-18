@@ -14,6 +14,8 @@ Execute scripts on IMAP mailbox changes (new/deleted/updated messages) using IDL
   "password": "",
   "onNotify": "/usr/bin/mbsync test-%s",
   "onNotifyPost": {"mail": "/usr/bin/notmuch new && notify-send 'New mail arrived'"},
+  "onStartupIfUnseenMail": "/usr/bin/mbsync test-%s",
+  "onStartupIfUnseenMailPost": "/usr/bin/notmuch new && notify-send 'New mail available'",
   "boxes":
     [
       "box1",
@@ -30,7 +32,11 @@ Execute scripts on IMAP mailbox changes (new/deleted/updated messages) using IDL
     onNotifyPost:
 		[string]: shell command to run after onNotify event
 		[object]: shell commands to run after onNotify for each type of event
-			keys: "mail" for new mail, "update" for existing messages updates, "expunge" for messages deletions
+			keys: "mail" for new mail, "update" for existing messages updates,
+      "expunge" for messages deletions
+    onStartupIfUnseenMail: shell command to run if unseen mail is available when connecting
+    onStartupIfUnseenMailPost: shell command to run after the previous one, when
+    unseen mail is available
 ```
 
 ### extra options
@@ -82,6 +88,8 @@ follows.  Assuming the script ~/getpass.sh prints out your password.
     exports.password = getStdout("~/getpass.sh");
     exports.onNotify = "<sync command>"
     exports.onNotifyPost = "<command>"
+    exports.onStartupIfUnseenMail = "<sync command>"
+    exports.onStartupIfUnseenMailPost = "<command>"
     exports.boxes = [ "box1", "box2", "some/other/box" ];
 ```
 
@@ -94,7 +102,7 @@ Thanks Matthew, for pointing that out!
 
 ## substitutions
 
-`%s` in `onNotify` and `onNotifyPost` is replaced by the box name.
+`%s` in `onNotify`, `onNotifyPost`, `onStartupIfUnseenMail` and `onStartupIfUnseenMailPost` is replaced by the box name.
 
 `/` symbol (slash) is replaced by `-` symbol (minus) so that
 `inbox/junk` becomes `inbox-junk`
