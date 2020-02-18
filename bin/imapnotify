@@ -35,9 +35,12 @@ function Notifier(config) {
     this.logger = logger.child({'server': this.config.server})
 }
 
-Notifier.prototype.add_box = function(box, cb, debug) {
+Notifier.prototype.add_box = function(box, cb, cbStartup, debug) {
   if (typeof cb !== 'function') {
     cb = function() {}
+  }
+  if (typeof cbStartup !== 'function') {
+      cbStartup = function() {}
   }
   var self = this;
 
@@ -58,7 +61,15 @@ Notifier.prototype.add_box = function(box, cb, debug) {
       delimiter = connection.namespaces.personal[0].delimiter;
     }
 
-    connection.openBox(replace(box, '/', delimiter), true, function(err) {
+    //retrieve status information about the box before opening it
+    connection.status(replace(box, '/', delimiter), function(err, boxStatus) {
+      if (err) throw err;
+      if (boxStatus.messages.unseen > 0) {
+        cbStartup(box);
+      }
+    });
+
+    connection.openBox(replace(box, '/', delimiter), true, function(err, openedBox) {
       if (err) throw err;
       function addConnectionListener(event, message) {
         connection.on(event, function() {
@@ -230,7 +241,17 @@ function executeCommands(command, postCommand, cb) {
     }
   })
 }
-
+function executeOnStartupIfUnseenMail(config) {
+  var command = config.onStartupIfUnseenMail
+  , postCommand = config.onStartupIfUnseenMailPost
+  ;
+  return function notify(box) {
+    box = replace(box.toLowerCase(), '\/', '-')
+    command = printf(command, box)
+    postCommand = printf(postCommand, box)
+    return executeCommands(command, postCommand)
+  }
+}
 function executeOnNotify(config) {
   var command = config.onNotify || config.onNewMail
     , postCommand = config.onNotifyPost || config.onNewMailPost
@@ -275,7 +296,7 @@ function main(cb) {
   var notifier = new Notifier(config);
 
   config.boxes.forEach(function (box) {
-    notifier.add_box(box, executeOnNotify(config), process.env['DEBUG'] === 'imap' ? logger.debug : null)
+    notifier.add_box(box, executeOnNotify(config), executeOnStartupIfUnseenMail(config), process.env['DEBUG'] === 'imap' ? logger.debug : null)
   })
 
   process.on('SIGINT', function() {
