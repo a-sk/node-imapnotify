@@ -250,7 +250,7 @@ function executeOnNotify(config) {
 	return function notify(box, event) {
 		var formattedBox = replace(box.toLowerCase(), '/', '-')
 		, formattedCommand = printf(commandIsEventMap ? command[event] || '': command, formattedBox)
-		, formattedPostCommand = printf(postCommandIsEventMap ? postCommand[event] || '': command, formattedBox)
+		, formattedPostCommand = printf(postCommandIsEventMap ? postCommand[event] || '': postCommand, formattedBox)
 		return executeCommands(formattedCommand, formattedPostCommand)
 	}
 }
