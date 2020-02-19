@@ -14,6 +14,7 @@ Execute scripts on IMAP mailbox changes (new/deleted/updated messages) using IDL
   "password": "",
   "onNotify": "/usr/bin/mbsync test-%s",
   "onNotifyPost": {"mail": "/usr/bin/notmuch new && notify-send 'New mail arrived'"},
+  "executeOnStartup": true,
   "boxes":
     [
       "box1",
@@ -27,10 +28,13 @@ Execute scripts on IMAP mailbox changes (new/deleted/updated messages) using IDL
 		[string]: shell command to run on any event
 		[object]: shell commands to run on for each type of event
 			keys: "mail" for new mail, "update" for existing messages updates, "expunge" for messages deletions
-    onNotifyPost:
+  onNotifyPost:
 		[string]: shell command to run after onNotify event
 		[object]: shell commands to run after onNotify for each type of event
 			keys: "mail" for new mail, "update" for existing messages updates, "expunge" for messages deletions
+  executeOnStartup:
+    [boolean]: execute the onNotify and onNotifyPost shell command at startup as
+    well, if new mail is available (execute the command for the 'mail' event)
 ```
 
 ### extra options
@@ -82,6 +86,7 @@ follows.  Assuming the script ~/getpass.sh prints out your password.
     exports.password = getStdout("~/getpass.sh");
     exports.onNotify = "<sync command>"
     exports.onNotifyPost = "<command>"
+    exports.executeOnStartup = true
     exports.boxes = [ "box1", "box2", "some/other/box" ];
 ```
 
