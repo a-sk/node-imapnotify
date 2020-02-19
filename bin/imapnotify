@@ -294,7 +294,7 @@ function main(cb) {
   process.on('SIGINT', function() {
     logger.info('Caught Ctrl-C, exiting...')
     notifier.stop(function() {
-      logger.info('imap-inotify stoped')
+      logger.info('imap-inotify stopped')
       runOnSig('INT', config, function() {process.exit(0)})
     })
   })
@@ -302,7 +302,7 @@ function main(cb) {
   process.on('SIGTERM', function() {
     logger.info('Caught SIGTERM, exiting...')
     notifier.stop(function() {
-      logger.info('imap-inotify stoped')
+      logger.info('imap-inotify stopped')
       runOnSig('TERM', config, function() {process.exit(2)})
     })
   })
