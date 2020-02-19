@@ -68,7 +68,7 @@ Notifier.prototype.add_box = function(box, cb, executeOnStartup, debug) {
       });
     }
 
-    connection.openBox(replace(box, '/', delimiter), true, function(err, openedBox) {
+    connection.openBox(replace(box, '/', delimiter), true, function(err) {
       if (err) throw err;
       function addConnectionListener(event, message) {
         connection.on(event, function() {
