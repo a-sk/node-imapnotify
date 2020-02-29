@@ -34,7 +34,7 @@ Execute scripts on IMAP mailbox changes (new/deleted/updated messages) using IDL
 			keys: "mail" for new mail, "update" for existing messages updates, "expunge" for messages deletions
   executeOnStartup:
 		[boolean]: execute the onNotify and onNotifyPost shell command at startup as
-					well, if new mail is available (execute the command for the 'mail' event)
+      well, if new mail is available (execute the command for the 'mail' event)
 ```
 
 ### extra options
