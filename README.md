@@ -66,6 +66,12 @@ given by an absolute path)
 Using the latest (>0.12) version of nodejs, one can write myconfig.js as
 follows.  Assuming the script ~/getpass.sh prints out your password.
 (execSync is a v0.12 feature)
+
+You can also use xoauth2 instead of password based authentication by setting
+the exports.xoauth2 option to the output of a tool which can provide xoauth2
+encoded tokens. Examples: [Google oauth2l](https://github.com/google/oauth2l) or
+[xoauth2 fetcher for O365](https://github.com/harishkrupo/oauth2ms)
+
 ```javascript
     var child_process = require('child_process');
 
@@ -80,6 +86,8 @@ follows.  Assuming the script ~/getpass.sh prints out your password.
     exports.tlsOptions = { "rejectUnauthorized": false };
     exports.username = "<user>";
     exports.password = getStdout("~/getpass.sh");
+    // use xoauth2 token (tool from: https://github.com/harishkrupo/oauth2ms)
+    // exports.xoauth2 = getStdout("oauth2ms --encode-xoauth2");
     exports.onNotify = "<sync command>"
     exports.onNotifyPost = "<command>"
     exports.boxes = [ "box1", "box2", "some/other/box" ];

@@ -25,6 +25,6 @@
     "notify",
     "mail",
     "email"
-    ],
-    "license": "MIT"
+  ],
+  "license": "MIT"
 }
