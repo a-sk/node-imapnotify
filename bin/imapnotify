@@ -128,6 +128,7 @@ Notifier.prototype.create_connection = function(debug) {
   var connection = new Imap({
     user: self.config.username,
     password: self.config.password,
+    xoauth2: self.config.xoauth2,
     host: self.config.host,
     port: self.config.port,
     tls: self.config.tls || false,
