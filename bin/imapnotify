@@ -35,7 +35,7 @@ function Notifier(config) {
     this.logger = logger.child({'server': this.config.server})
 }
 
-Notifier.prototype.add_box = function(box, cb, debug) {
+Notifier.prototype.add_box = function(box, cb, executeOnStartup, debug) {
   if (typeof cb !== 'function') {
     cb = function() {}
   }
@@ -56,6 +56,16 @@ Notifier.prototype.add_box = function(box, cb, debug) {
     var delimiter = '/';
     if (connection.namespaces) {
       delimiter = connection.namespaces.personal[0].delimiter;
+    }
+
+    //retrieve status information about the box before opening it
+    if (executeOnStartup) {
+      connection.status(replace(box, '/', delimiter), function(err, boxStatus) {
+        if (err) throw err;
+        if (boxStatus.messages.unseen > 0) {
+          cb(box, 'mail');
+        }
+      });
     }
 
     connection.openBox(replace(box, '/', delimiter), true, function(err) {
@@ -240,9 +250,12 @@ function executeOnNotify(config) {
 	return function notify(box, event) {
 		var formattedBox = replace(box.toLowerCase(), '/', '-')
 		, formattedCommand = printf(commandIsEventMap ? command[event] || '': command, formattedBox)
-		, formattedPostCommand = printf(postCommandIsEventMap ? postCommand[event] || '': command, formattedBox)
+		, formattedPostCommand = printf(postCommandIsEventMap ? postCommand[event] || '' : (postCommand ? postCommand : ''), formattedBox);
 		return executeCommands(formattedCommand, formattedPostCommand)
 	}
+}
+function executeOnStartup(config) {
+  return (config.executeOnStartup || false);
 }
 
 function runOnSig(signal, config, cb) {
@@ -275,13 +288,13 @@ function main(cb) {
   var notifier = new Notifier(config);
 
   config.boxes.forEach(function (box) {
-    notifier.add_box(box, executeOnNotify(config), process.env['DEBUG'] === 'imap' ? logger.debug : null)
+    notifier.add_box(box, executeOnNotify(config), executeOnStartup(config), process.env['DEBUG'] === 'imap' ? logger.debug : null)
   })
 
   process.on('SIGINT', function() {
     logger.info('Caught Ctrl-C, exiting...')
     notifier.stop(function() {
-      logger.info('imap-inotify stoped')
+      logger.info('imap-inotify stopped')
       runOnSig('INT', config, function() {process.exit(0)})
     })
   })
@@ -289,7 +302,7 @@ function main(cb) {
   process.on('SIGTERM', function() {
     logger.info('Caught SIGTERM, exiting...')
     notifier.stop(function() {
-      logger.info('imap-inotify stoped')
+      logger.info('imap-inotify stopped')
       runOnSig('TERM', config, function() {process.exit(2)})
     })
   })
